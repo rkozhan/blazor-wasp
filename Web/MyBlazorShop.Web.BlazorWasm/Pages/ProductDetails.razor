@@ -8,6 +8,9 @@
 @if (Product != null)
 {
     <PageTitle>@Product.Name</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@Product.Name" />
+    </HeadContent>
 }
    <main class="margin-horizontal:auto max-width:container padding-horizontal:32">
        <div id="vue-product-detail" class="quenched">
@@ -15,9 +18,7 @@
                <div class="display:flex flex-wrap:wrap flex-grow:1 margin-bottom:-32 margin-horizontal:-16">
                 @if (Product == null)
                 {
-                    <div class="display:flex flex-direction:column flex-grow:0 flex-shrink:0 margin-bottom:32 padding-horizontal:16 width:100 @@mq-768--width:50">
-                        <p>Not found</p>
-                    </div>
+                    <LayoutView Layout="typeof(NotFoundLayout)"></LayoutView>
                 }
                 else {
                     <div class="display:flex flex-direction:column flex-grow:0 flex-shrink:0 margin-bottom:32 padding-horizontal:16 width:100 @@mq-768--width:50">
@@ -60,12 +61,13 @@
        </div>
     </main>
 @code {
-    public ProductModel? Product { get; set; }
 
-    public int? Quantity { get; set; }
+    public ProductModel? Product { get; set; }
 
     [Parameter]
     public string? Slug { get; set; }
+
+    public int? Quantity { get; set; }
 
     public IList<ProductModel>? AllProducts { get; set; }
 }
