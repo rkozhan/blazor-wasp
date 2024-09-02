@@ -1,3 +1,0 @@
-<main class="margin-horizontal:auto max-width:container padding-horizontal:32">
-
-</main>
