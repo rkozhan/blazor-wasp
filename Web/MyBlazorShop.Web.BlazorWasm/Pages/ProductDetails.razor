@@ -81,7 +81,7 @@
 
     private ProductAddToCartModel ProductAddToCartModel = new ProductAddToCartModel();
 
-    [CascadingParameter(Name = "ShoppingCartCountModel")]
+    [CascadingParameter(Name="ShoppingCartCountModel")]
     private ShoppingCartCountModel? ShoppingCartCountModel { get; set; }
 }
 @functions {
@@ -109,7 +109,7 @@
 
             if (ShoppingCartCountModel != null) {
                 ShoppingCartCountModel.OnCountChange();
-            }
+            } 
         }
     }
 }

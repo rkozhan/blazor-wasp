@@ -19,7 +19,7 @@
     [Parameter]
     public ShoppingCartItemModel? Item { get; set; }
 
-    [CascadingParameter(Name = "ShoppingCartCountModel")]
+    [CascadingParameter(Name="ShoppingCartCountModel")]
     private ShoppingCartCountModel? ShoppingCartCountModel { get; set; }
 }
 @functions {
@@ -30,8 +30,7 @@
             shoppingCartService.DeleteProduct(Item);
             Item = null;
 
-            if (ShoppingCartCountModel != null)
-            {
+            if (ShoppingCartCountModel != null) {
                 ShoppingCartCountModel.OnCountChange();
             }
         }

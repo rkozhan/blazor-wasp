@@ -8,12 +8,12 @@
     </svg>
 </div>
 <CascadingValue Value="@ShoppingCartCountModel" Name="ShoppingCartCountModel">
-<Header />
-@Body
+    <Header />
+    @Body
+    <Footer />
 </CascadingValue>
-<Footer />
 @code {
-    private ShoppingCartCountModel? ShoppingCartCountModel { get; set; }
+    private ShoppingCartCountModel? ShoppingCartCountModel;
 
     protected override void OnInitialized()
     {
