@@ -6,6 +6,7 @@
 @inject NavigationManager navigationManager
 @inject HttpClient httpClient
 @inject IConfiguration configuration
+@inject ILoggerFactory loggerFactory
 @if (Product != null)
 {
     <PageTitle>@Product.Name</PageTitle>
@@ -110,6 +111,9 @@
                         string.Format("/api/shopping-cart/has-product/{0}", Product.Sku)
                 );
             }
+
+            var logger = loggerFactory.CreateLogger<ProductDetails>();
+            logger.LogInformation("Product has been set");
         }        
     }
 
