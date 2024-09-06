@@ -47,10 +47,13 @@
                     <InputNumber @bind-Value="ProductAddToCartModel.Quantity" id="product-qty" type="number" min="1" required />
                 </div>
             </div>
-            <div>
+            <div @ref="AddToCartRef">
                 <button type="submit" class="button lg solid gold">Add to cart</button>
             </div>
         </EditForm>
+        <div @ref="AddedToCartRef" style="display: none;">
+            <span class="added-to-cart">Added to Cart</span>
+        </div>
     </section>
     @if (AllProducts?.Any() ?? false)
     {
@@ -81,6 +84,10 @@
     private ShoppingCartCountModel? ShoppingCartCountModel { get; set; }
 
     private IJSObjectReference? Module { get; set; }
+
+    private ElementReference AddToCartRef;
+
+    private ElementReference AddedToCartRef;
 }
 @functions {
     protected override async Task OnInitializedAsync()
@@ -140,10 +147,8 @@
 
             if (Module == null)
             {
-                Module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "/JS/JSInterlop.js");
+                Module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "/js/JSInterlopElement.js");
             }
-
-            await Module.InvokeVoidAsync("AddToCart", Product.Name);
 
             HasProductInCart = await httpClient.GetFromJsonAsync<bool>(
                 string.Format("/api/shopping-cart/has-product/{0}", Product.Sku)
@@ -154,7 +159,11 @@
             if (ShoppingCartCountModel != null) {
                 // Signal that the cart has been updated.
                 await ShoppingCartCountModel.OnUpdateCartAsync(httpClient);
-            } 
+            }
+
+            await Module.InvokeVoidAsync("ToggleElement", AddToCartRef);
+            await Module.InvokeVoidAsync("ToggleElement", AddedToCartRef);
+            await Task.Delay(TimeSpan.FromSeconds(3));
 
             navigationManager.NavigateTo("/cart");
         }
