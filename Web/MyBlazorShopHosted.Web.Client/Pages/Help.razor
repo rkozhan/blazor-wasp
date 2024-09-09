@@ -1,6 +1,8 @@
 ﻿@page "/help"
 @inject HttpClient httpClient
 @using System.Net.Http.Headers
+@using MyBlazorShopHosted.Libraries.Shared.Upload.Extensions
+@using MyBlazorShopHosted.Libraries.Shared.Upload.Models
 <HeadContent>
     <link href="/css/bigstarcollectables.help.css" rel="stylesheet" />
 </HeadContent>
@@ -11,10 +13,27 @@
         <InputFile @key=InputFileId.ToString() OnChange="OnInputFileChange" />
         <button class="button lg solid gold" type="button" @onclick="UploadImageAsync">Upload image</button>
     </form>
+    @if (AllowedUploadFileResult?.Errors?.Any() ?? false)
+    {
+        <p>The following errors occured:</p>
+        <ul>
+            @foreach (var error in AllowedUploadFileResult.Errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    }
+    @if (Uploaded)
+    {
+        <p>The file has been successfully uploaded.</p>
+    }
 </section>
 @code {
     private Guid InputFileId = Guid.NewGuid();
     private IReadOnlyList<IBrowserFile>? UploadFiles { get; set; }
+
+    private AllowedUploadFileResult? AllowedUploadFileResult { get; set; }
+    private bool Uploaded { get; set; }
 }
 @functions {
     private void OnInputFileChange(InputFileChangeEventArgs e)
@@ -25,23 +44,50 @@
 
     private async Task UploadImageAsync()
     {
+        // Reset messages
+        AllowedUploadFileResult = null;
+        Uploaded = false;
+
         if (UploadFiles == null)
         {
             return;
         }
 
-        using var content = new MultipartFormDataContent();
-
         foreach (var uploadFile in UploadFiles)
         {
-            var fileContent = new StreamContent(uploadFile.OpenReadStream());
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue(uploadFile.ContentType);
+            // Read uploaded file and store as a byte array
+            var uploadFileBuffer = new byte[uploadFile.Size];
+            await uploadFile.OpenReadStream().ReadAsync(uploadFileBuffer);
 
-            content.Add(content: fileContent, name: "\"files\"", fileName: uploadFile.Name);
+            // Check the uploaded file to see if they validate.
+            AllowedUploadFileResult = AllowedUploadFileHelper.ValidateFile(uploadFile.Name, uploadFileBuffer);
         }
 
-        await httpClient.PostAsync("/api/file/upload", content);
+        if (AllowedUploadFileResult?.Success ?? false)
+        {
+            using var content = new MultipartFormDataContent();
 
-        InputFileId = Guid.NewGuid();
+            // Add each file to the upload.
+            foreach (var uploadFile in UploadFiles)
+            {
+                var fileContent = new StreamContent(uploadFile.OpenReadStream());
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(uploadFile.ContentType);
+
+                content.Add(content: fileContent, name: "\"files\"", fileName: uploadFile.Name);
+            }
+
+            // Post the file up to the API and return a result.
+            AllowedUploadFileResult = await (await httpClient.PostAsync("/api/file/upload", content))
+            .Content.ReadFromJsonAsync<AllowedUploadFileResult>();
+
+            if (AllowedUploadFileResult?.Success ?? false)
+            {
+                // If successfully uploaded, note that it has been uploaded.
+                Uploaded = true;
+                InputFileId = Guid.NewGuid();
+            }
+        }
+
+
     }
 }
