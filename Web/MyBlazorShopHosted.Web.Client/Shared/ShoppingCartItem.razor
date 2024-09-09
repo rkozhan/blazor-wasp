@@ -1,6 +1,8 @@
 ﻿@using MyBlazorShopHosted.Libraries.Shared.ShoppingCart.Models
 @using MyBlazorShopHosted.Libraries.Shared.Product.Models
+@using MyBlazorShopHosted.Web.Client.StateManagement
 @inject HttpClient httpClient
+@inject IShoppingCartStateContainer shoppingCartStateContainer
 @if (Item != null)
 {
     <tr>
@@ -23,9 +25,6 @@
 @code {
     [Parameter]
     public ShoppingCartItemModel? Item { get; set; }
-
-    [CascadingParameter(Name="ShoppingCartCountModel")]
-    private ShoppingCartCountModel? ShoppingCartCountModel { get; set; }
 }
 @functions {
     private async Task DeleteCartItemAsync()
@@ -38,11 +37,7 @@
                     Item.Product.Sku
                 )
             );
-
-            if (ShoppingCartCountModel != null) {
-                // Item deleted, so call the update cart event
-                await ShoppingCartCountModel.OnUpdateCartAsync(httpClient);
-            }
+            await shoppingCartStateContainer.UpdateTotalItemsCountAsync(httpClient);
         }
     }
 }
