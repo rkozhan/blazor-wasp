@@ -37,7 +37,8 @@
                     Item.Product.Sku
                 )
             );
-            await shoppingCartStateContainer.UpdateTotalItemsCountAsync(httpClient);
+
+            await shoppingCartStateContainer.UpdateTotalItemsCountAsync();
         }
     }
 }
